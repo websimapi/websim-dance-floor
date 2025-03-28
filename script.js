@@ -1,5 +1,6 @@
 import { config } from 'config';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const danceFloor = document.getElementById('dance-floor');
 const musicInput = document.getElementById('music-input');
@@ -204,7 +205,7 @@ function loadCharacter(characterUrl) {
     currentAnimationIndex = 0;
     isCharacterLoaded = false;
     
-    const loader = new THREE.GLTFLoader();
+    const loader = new GLTFLoader();
     loader.load(
         characterUrl,
         (gltf) => {
