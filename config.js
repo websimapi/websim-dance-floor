@@ -22,6 +22,6 @@ export const config = {
     { id: 'soldier', name: 'Soldier', url: 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb' },
     { id: 'parrot', name: 'Parrot', url: 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Parrot.glb' }
   ],
-  cameraDistance: 5, // Distance of camera from character
-  cameraHeight: 3,   // Height of camera above character
+  cameraDistance: 7, // Distance of camera from character (increased for better view)
+  cameraHeight: 4,   // Height of camera above character (increased for better view)
 };

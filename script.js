@@ -127,9 +127,19 @@ function changeCharacterAnimation() {
         danceAnimations[currentAnimationIndex].weight = 0;
         
         // Start a new random animation
-        currentAnimationIndex = Math.floor(Math.random() * danceAnimations.length);
+        let newIndex;
+        do {
+            newIndex = Math.floor(Math.random() * danceAnimations.length);
+        } while (newIndex === currentAnimationIndex && danceAnimations.length > 1);
+        
+        currentAnimationIndex = newIndex;
         danceAnimations[currentAnimationIndex].weight = 1;
-        danceAnimations[currentAnimationIndex].play();
+        danceAnimations[currentAnimationIndex].reset();
+        
+        // Ensure animation is playing
+        if (!danceAnimations[currentAnimationIndex].isRunning()) {
+            danceAnimations[currentAnimationIndex].play();
+        }
     }
 }
 
@@ -210,8 +220,25 @@ function loadCharacter(characterUrl) {
         characterUrl,
         (gltf) => {
             character = gltf.scene;
-            character.scale.set(1, 1, 1);
-            character.position.set(0, 0, 0);
+            
+            // Properly size and position the character based on model type
+            if (characterUrl.includes('RobotExpressive')) {
+                character.scale.set(0.5, 0.5, 0.5);
+                character.position.y = 0;
+            } else if (characterUrl.includes('Soldier')) {
+                character.scale.set(1.5, 1.5, 1.5);
+                character.position.y = 0;
+            } else if (characterUrl.includes('Parrot')) {
+                character.scale.set(0.35, 0.35, 0.35);
+                character.position.y = 1.5; // Float the parrot above the ground
+            } else {
+                // Default sizing
+                character.scale.set(1, 1, 1);
+                character.position.y = 0;
+            }
+            
+            character.position.x = 0;
+            character.position.z = 0;
             scene.add(character);
             
             // Setup character animations
@@ -226,7 +253,6 @@ function loadCharacter(characterUrl) {
                         if (danceClips.some(name => clip.name.includes(name))) {
                             const action = mixer.clipAction(clip);
                             action.weight = 0;
-                            action.play();
                             danceAnimations.push(action);
                         }
                     });
@@ -235,7 +261,6 @@ function loadCharacter(characterUrl) {
                     gltf.animations.forEach((clip) => {
                         const action = mixer.clipAction(clip);
                         action.weight = 0;
-                        action.play();
                         danceAnimations.push(action);
                     });
                 }
@@ -245,6 +270,9 @@ function loadCharacter(characterUrl) {
                     danceAnimations[0].weight = 1;
                     danceAnimations[0].play();
                 }
+                
+                // Play all animations at the beginning
+                danceAnimations.forEach(animation => animation.play());
             }
             
             isCharacterLoaded = true;
