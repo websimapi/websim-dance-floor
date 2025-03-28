@@ -258,6 +258,7 @@ function loadCharacter(characterUrl) {
                         if (danceClips.some(name => clip.name.includes(name))) {
                             const action = mixer.clipAction(clip);
                             action.weight = 0;
+                            action.setLoop(THREE.LoopRepeat);
                             danceAnimations.push(action);
                         }
                     });
@@ -266,6 +267,7 @@ function loadCharacter(characterUrl) {
                     gltf.animations.forEach((clip) => {
                         const action = mixer.clipAction(clip);
                         action.weight = 0;
+                        action.setLoop(THREE.LoopRepeat);
                         danceAnimations.push(action);
                     });
                 }
@@ -281,6 +283,11 @@ function loadCharacter(characterUrl) {
             }
             
             isCharacterLoaded = true;
+            
+            // Start animation loop even if no music is playing
+            if (!animationFrameId) {
+                startAnimation();
+            }
         },
         (xhr) => {
             console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
@@ -307,6 +314,7 @@ function loadDanceAnimationsForXbot(mixer, character) {
                 gltf.animations.forEach(clip => {
                     const action = mixer.clipAction(clip);
                     action.weight = 0;
+                    action.setLoop(THREE.LoopRepeat);
                     danceAnimations.push(action);
                 });
                 
@@ -365,4 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadCharacter(config.characters[0].url);
         }
     }
+    
+    // Ensure animation loop is running regardless of music
+    startAnimation();
 });
