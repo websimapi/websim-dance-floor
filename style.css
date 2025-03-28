@@ -1,0 +1,36 @@
+body {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #111;
+    overflow: hidden;
+}
+
+#dance-floor {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-cols, 10), 1fr);
+    grid-template-rows: repeat(var(--grid-rows, 10), 1fr);
+    width: 80vmin;
+    height: 80vmin;
+    gap: 2px;
+    background-color: #222;
+    border: 5px solid #444;
+    margin-bottom: 20px; /* Add space between dance floor and input */
+}
+
+.tile {
+    background-color: #333;
+    transition: background-color 0.1s ease-out;
+}
+
+#music-input {
+    padding: 10px;
+    background-color: #444;
+    color: #eee;
+    border: none;
+    cursor: pointer;
+}
+
