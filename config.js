@@ -1,9 +1,18 @@
 export const config = {
   gridSize: 10, // Number of rows and columns for the dance floor
-  lightUpProbability: 0.1, // Chance for a tile to light up on a beat
-  maxActiveLights: 15, // Maximum number of tiles lit simultaneously
-  lightColors: ['#ff00ff', '#00ffff', '#ffff00', '#ff5500', '#00ff55', '#5500ff'], // Colors for the lights
+  lightColors: [
+      '#FF0000', // Red
+      '#FF7F00', // Orange
+      '#FFFF00', // Yellow
+      '#00FF00', // Lime
+      '#00FFFF', // Cyan
+      '#0000FF', // Blue
+      '#8B00FF', // Violet
+      '#FF00FF', // Magenta
+      '#FF1493', // Deep Pink
+      '#00BFFF', // Deep Sky Blue
+      '#ADFF2F'  // Green Yellow
+  ],
   beatDetectionThreshold: 0.15, // Sensitivity for detecting beats (lower = more sensitive)
   analysisBufferSize: 1024, // FFT size for audio analysis
 };
-

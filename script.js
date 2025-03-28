@@ -7,7 +7,6 @@ let analyser;
 let source;
 let dataArray;
 let animationFrameId;
-let activeTiles = [];
 
 // --- Create Dance Floor Grid ---
 function createGrid() {
@@ -77,7 +76,7 @@ function stopAnimation() {
 function animationLoop() {
     analyser.getByteFrequencyData(dataArray);
 
-    // Simple beat detection (average volume change)
+    // Simple beat detection (average volume)
     let sum = 0;
     for (let i = 0; i < dataArray.length; i++) {
         sum += dataArray[i];
@@ -88,10 +87,9 @@ function animationLoop() {
     let normalizedAverage = average / 128.0; // Values in dataArray are 0-255
 
     if (normalizedAverage > config.beatDetectionThreshold) {
-        lightUpRandomTiles();
+        lightUpAllTiles(); // Light up the entire floor
     } else {
-        // Optionally dim lights slightly when no strong beat
-         fadeLights();
+        clearLights(); // Turn off all lights if below threshold
     }
 
 
@@ -99,54 +97,20 @@ function animationLoop() {
 }
 
 // --- Tile Lighting Logic ---
-function lightUpRandomTiles() {
+function lightUpAllTiles() {
     const tiles = danceFloor.querySelectorAll('.tile');
-    const numTiles = tiles.length;
-
-    // Turn off some older lights if max is reached
-    while (activeTiles.length >= config.maxActiveLights) {
-        const tileToRemove = activeTiles.shift(); // Remove the oldest tile
-        if (tileToRemove) { // Check if tileToRemove exists
-           tileToRemove.style.backgroundColor = '#333'; // Reset color
-        }
-    }
-
-
-    // Light up new tiles based on probability
-    for (let i = 0; i < numTiles; i++) {
-         // Only consider lighting up if not already lit and below max count
-        if (!activeTiles.includes(tiles[i]) && activeTiles.length < config.maxActiveLights) {
-            if (Math.random() < config.lightUpProbability) {
-                 const randomColor = config.lightColors[Math.floor(Math.random() * config.lightColors.length)];
-                 tiles[i].style.backgroundColor = randomColor;
-                 activeTiles.push(tiles[i]); // Add to active list
-            }
-        }
-    }
-}
-
-// Optional: Fade lights slowly when beat is low
-function fadeLights() {
-    activeTiles = activeTiles.filter(tile => {
-        // Example: Reduce brightness slightly or just turn off after a delay
-        // For simplicity, let's just turn them off randomly over time
-        if (Math.random() < 0.05) { // Small chance to turn off each frame
-             tile.style.backgroundColor = '#333';
-             return false; // Remove from activeTiles
-        }
-        return true; // Keep in activeTiles
+    tiles.forEach(tile => {
+        const randomColor = config.lightColors[Math.floor(Math.random() * config.lightColors.length)];
+        tile.style.backgroundColor = randomColor;
     });
 }
-
 
 function clearLights() {
     const tiles = danceFloor.querySelectorAll('.tile');
     tiles.forEach(tile => {
-        tile.style.backgroundColor = '#333';
+        tile.style.backgroundColor = '#333'; // Reset to default dark color
     });
-    activeTiles = []; // Clear the active list
 }
-
 
 // --- Event Listener ---
 musicInput.addEventListener('change', (event) => {
@@ -161,4 +125,3 @@ musicInput.addEventListener('change', (event) => {
 
 // --- Initial Setup ---
 createGrid(); // Create the grid on page load
-
