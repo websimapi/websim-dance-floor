@@ -72,7 +72,6 @@ function startAnimation() {
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
     }
-    clock = new THREE.Clock();
     animationLoop();
 }
 
@@ -85,6 +84,8 @@ function stopAnimation() {
 }
 
 function animationLoop() {
+    if (!analyser) return; // Exit if analyser is not defined
+    
     analyser.getByteFrequencyData(dataArray);
 
     // Simple beat detection (average volume)
@@ -113,7 +114,7 @@ function animationLoop() {
     }
     
     // Render the 3D scene
-    if (renderer) {
+    if (renderer && scene && camera) {
         renderer.render(scene, camera);
     }
 
@@ -374,6 +375,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Ensure animation loop is running regardless of music
-    startAnimation();
+    // Don't start animation until audio is loaded or character is loaded
+    clock = new THREE.Clock(); // Initialize clock here
 });
