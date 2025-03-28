@@ -2,11 +2,19 @@ import { config } from 'config';
 
 const danceFloor = document.getElementById('dance-floor');
 const musicInput = document.getElementById('music-input');
+const characterSelect = document.getElementById('character-select');
+const scene3D = document.getElementById('scene3D');
 let audioContext;
 let analyser;
 let source;
 let dataArray;
 let animationFrameId;
+
+// Three.js variables
+let scene, camera, renderer, mixer, character, clock;
+let danceAnimations = [];
+let currentAnimationIndex = 0;
+let isCharacterLoaded = false;
 
 // --- Create Dance Floor Grid ---
 function createGrid() {
@@ -62,6 +70,7 @@ function startAnimation() {
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
     }
+    clock = new THREE.Clock();
     animationLoop();
 }
 
@@ -70,7 +79,7 @@ function stopAnimation() {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
     }
-     clearLights(); // Turn off lights when stopping
+    clearLights(); // Turn off lights when stopping
 }
 
 function animationLoop() {
@@ -88,12 +97,38 @@ function animationLoop() {
 
     if (normalizedAverage > config.beatDetectionThreshold) {
         lightUpAllTiles(); // Light up the entire floor
+        if (isCharacterLoaded) {
+            // Change dance animation on beat
+            changeCharacterAnimation();
+        }
     } else {
         clearLights(); // Turn off all lights if below threshold
     }
 
+    // Update character animation
+    if (mixer) {
+        mixer.update(clock.getDelta());
+    }
+    
+    // Render the 3D scene
+    if (renderer) {
+        renderer.render(scene, camera);
+    }
 
     animationFrameId = requestAnimationFrame(animationLoop);
+}
+
+// Change character animation randomly
+function changeCharacterAnimation() {
+    if (danceAnimations.length > 0) {
+        // Stop current animation
+        danceAnimations[currentAnimationIndex].weight = 0;
+        
+        // Start a new random animation
+        currentAnimationIndex = Math.floor(Math.random() * danceAnimations.length);
+        danceAnimations[currentAnimationIndex].weight = 1;
+        danceAnimations[currentAnimationIndex].play();
+    }
 }
 
 // --- Tile Lighting Logic ---
@@ -112,7 +147,126 @@ function clearLights() {
     });
 }
 
-// --- Event Listener ---
+// --- Setup 3D Scene ---
+function setupScene() {
+    // Create scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x111111);
+    
+    // Create camera
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, config.cameraHeight, config.cameraDistance);
+    camera.lookAt(0, 0, 0);
+    
+    // Create renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    scene3D.appendChild(renderer.domElement);
+    
+    // Create lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(0, 10, 5);
+    scene.add(directionalLight);
+    
+    // Create floor
+    const floorGeometry = new THREE.PlaneGeometry(10, 10);
+    const floorMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x333333,
+        roughness: 0.8,
+        metalness: 0.2
+    });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+}
+
+// Load character model
+function loadCharacter(characterUrl) {
+    if (character) {
+        scene.remove(character);
+    }
+    
+    danceAnimations = [];
+    currentAnimationIndex = 0;
+    isCharacterLoaded = false;
+    
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+        characterUrl,
+        (gltf) => {
+            character = gltf.scene;
+            character.scale.set(1, 1, 1);
+            character.position.set(0, 0, 0);
+            scene.add(character);
+            
+            // Setup character animations
+            if (gltf.animations && gltf.animations.length > 0) {
+                mixer = new THREE.AnimationMixer(character);
+                
+                // For the Robot model which has named animations
+                if (characterUrl.includes('RobotExpressive')) {
+                    const danceClips = ['Dance', 'Running', 'Walking', 'Idle'];
+                    
+                    gltf.animations.forEach((clip) => {
+                        if (danceClips.some(name => clip.name.includes(name))) {
+                            const action = mixer.clipAction(clip);
+                            action.weight = 0;
+                            action.play();
+                            danceAnimations.push(action);
+                        }
+                    });
+                } else {
+                    // For other models, use all available animations
+                    gltf.animations.forEach((clip) => {
+                        const action = mixer.clipAction(clip);
+                        action.weight = 0;
+                        action.play();
+                        danceAnimations.push(action);
+                    });
+                }
+                
+                // Start with the first animation
+                if (danceAnimations.length > 0) {
+                    danceAnimations[0].weight = 1;
+                    danceAnimations[0].play();
+                }
+            }
+            
+            isCharacterLoaded = true;
+        },
+        (xhr) => {
+            console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+        },
+        (error) => {
+            console.error('An error occurred loading the character:', error);
+        }
+    );
+}
+
+// Populate character selection dropdown
+function populateCharacterSelection() {
+    config.characters.forEach(char => {
+        const option = document.createElement('option');
+        option.value = char.id;
+        option.textContent = char.name;
+        characterSelect.appendChild(option);
+    });
+}
+
+// --- Event Listeners ---
 musicInput.addEventListener('change', (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -123,5 +277,22 @@ musicInput.addEventListener('change', (event) => {
     }
 });
 
+characterSelect.addEventListener('change', (event) => {
+    const selectedCharId = event.target.value;
+    const selectedChar = config.characters.find(char => char.id === selectedCharId);
+    if (selectedChar) {
+        loadCharacter(selectedChar.url);
+    }
+});
+
 // --- Initial Setup ---
-createGrid(); // Create the grid on page load
+document.addEventListener('DOMContentLoaded', () => {
+    createGrid(); // Create the grid on page load
+    setupScene(); // Setup 3D scene
+    populateCharacterSelection(); // Populate character dropdown
+    
+    // Load default character
+    if (config.characters.length > 0) {
+        loadCharacter(config.characters[0].url);
+    }
+});

@@ -15,4 +15,13 @@ export const config = {
   ],
   beatDetectionThreshold: 0.15, // Sensitivity for detecting beats (lower = more sensitive)
   analysisBufferSize: 1024, // FFT size for audio analysis
+  
+  // Character settings
+  characters: [
+    { id: 'robot', name: 'Robot', url: 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/RobotExpressive/RobotExpressive.glb' },
+    { id: 'soldier', name: 'Soldier', url: 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb' },
+    { id: 'parrot', name: 'Parrot', url: 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Parrot.glb' }
+  ],
+  cameraDistance: 5, // Distance of camera from character
+  cameraHeight: 3,   // Height of camera above character
 };
