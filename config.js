@@ -20,7 +20,8 @@ export const config = {
   characters: [
     { id: 'robot', name: 'Robot', url: 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/RobotExpressive/RobotExpressive.glb' },
     { id: 'soldier', name: 'Soldier', url: 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb' },
-    { id: 'parrot', name: 'Parrot', url: 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Parrot.glb' }
+    { id: 'parrot', name: 'Parrot', url: 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Parrot.glb' },
+    { id: 'dancer', name: 'Dancer', url: 'https://threejs.org/examples/models/gltf/Xbot.glb' }
   ],
   cameraDistance: 7, // Distance of camera from character (increased for better view)
   cameraHeight: 4,   // Height of camera above character (increased for better view)

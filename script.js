@@ -231,6 +231,11 @@ function loadCharacter(characterUrl) {
             } else if (characterUrl.includes('Parrot')) {
                 character.scale.set(0.35, 0.35, 0.35);
                 character.position.y = 1.5; // Float the parrot above the ground
+            } else if (characterUrl.includes('Xbot')) {
+                character.scale.set(1, 1, 1);
+                character.position.y = 0;
+                // Immediately load dance animations for Xbot
+                loadDanceAnimationsForXbot(mixer, character);
             } else {
                 // Default sizing
                 character.scale.set(1, 1, 1);
@@ -286,6 +291,35 @@ function loadCharacter(characterUrl) {
     );
 }
 
+// Function to load external dance animations for Xbot
+function loadDanceAnimationsForXbot(mixer, character) {
+    const danceAnimUrls = [
+        'https://threejs.org/examples/models/gltf/Xbot/dance.glb',
+        'https://threejs.org/examples/models/gltf/Xbot/samba.glb',
+        'https://threejs.org/examples/models/gltf/Xbot/bellydance.glb'
+    ];
+    
+    const loader = new GLTFLoader();
+    
+    danceAnimUrls.forEach(url => {
+        loader.load(url, (gltf) => {
+            if (gltf.animations && gltf.animations.length > 0) {
+                gltf.animations.forEach(clip => {
+                    const action = mixer.clipAction(clip);
+                    action.weight = 0;
+                    danceAnimations.push(action);
+                });
+                
+                // If this is the first animation loaded, play it
+                if (danceAnimations.length === 1) {
+                    danceAnimations[0].weight = 1;
+                    danceAnimations[0].play();
+                }
+            }
+        });
+    });
+}
+
 // Populate character selection dropdown
 function populateCharacterSelection() {
     config.characters.forEach(char => {
@@ -321,8 +355,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setupScene(); // Setup 3D scene
     populateCharacterSelection(); // Populate character dropdown
     
-    // Load default character
+    // Load default character - changing to Dancer by default
     if (config.characters.length > 0) {
-        loadCharacter(config.characters[0].url);
+        const dancerCharacter = config.characters.find(char => char.id === 'dancer');
+        if (dancerCharacter) {
+            loadCharacter(dancerCharacter.url);
+            characterSelect.value = 'dancer'; // Set the dropdown to match
+        } else {
+            loadCharacter(config.characters[0].url);
+        }
     }
 });
