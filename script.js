@@ -1,4 +1,5 @@
 import { config } from 'config';
+import * as THREE from 'three';
 
 const danceFloor = document.getElementById('dance-floor');
 const musicInput = document.getElementById('music-input');
